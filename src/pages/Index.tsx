@@ -4,6 +4,9 @@ import Login from '../components/Login';
 import Layout from '../components/Layout';
 import Dashboard from '../components/Dashboard';
 import Courses from '../components/Courses';
+import Students from '../components/Students';
+import Attendance from '../components/Attendance';
+import Performance from '../components/Performance';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const AppContent: React.FC = () => {
@@ -28,11 +31,11 @@ const AppContent: React.FC = () => {
       case '/courses':
         return <Courses />;
       case '/students':
-        return <div className="alert alert-info">Students management coming soon...</div>;
+        return <Students />;
       case '/attendance':
-        return <div className="alert alert-info">Attendance management coming soon...</div>;
+        return <Attendance />;
       case '/performance':
-        return <div className="alert alert-info">Performance tracking coming soon...</div>;
+        return <Performance />;
       default:
         return <Dashboard />;
     }
