@@ -7,6 +7,7 @@ const Performance: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState('');
   const [selectedBatch, setSelectedBatch] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   if (!user || !hasPermission(user, 'read', 'performance')) {
     return (
@@ -81,7 +82,12 @@ const Performance: React.FC = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3>Performance Management</h3>
         {hasPermission(user, 'create', 'performance') && (
-          <button className="btn btn-primary">Add Performance Record</button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowModal(true)}
+          >
+            Add Performance Record
+          </button>
         )}
       </div>
 
@@ -274,6 +280,112 @@ const Performance: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Add Performance Modal */}
+      {showModal && (
+        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Add Performance Record</h5>
+                <button 
+                  type="button" 
+                  className="btn-close"
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form>
+                  <div className="mb-3">
+                    <label className="form-label">Student</label>
+                    <select className="form-select" required>
+                      <option value="">Select Student</option>
+                      {mockStudents.map(student => {
+                        const studentUser = getStudentUser(student.userId);
+                        return (
+                          <option key={student.id} value={student.id}>
+                            {studentUser?.fullName} - {student.batch}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Course</label>
+                    <select className="form-select" required>
+                      <option value="">Select Course</option>
+                      {mockCourses.map(course => (
+                        <option key={course.id} value={course.id}>{course.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Assignment</label>
+                    <input 
+                      type="text" 
+                      className="form-control"
+                      placeholder="e.g., Quiz 1, Assignment 2"
+                      required
+                    />
+                  </div>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label">Score</label>
+                        <input 
+                          type="number" 
+                          className="form-control"
+                          min="0"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="mb-3">
+                        <label className="form-label">Max Score</label>
+                        <input 
+                          type="number" 
+                          className="form-control"
+                          min="1"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Date</label>
+                    <input 
+                      type="date" 
+                      className="form-control"
+                      defaultValue={new Date().toISOString().split('T')[0]}
+                      required
+                    />
+                  </div>
+                </form>
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={() => {
+                    alert('Performance record would be saved here!');
+                    setShowModal(false);
+                  }}
+                >
+                  Add Record
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

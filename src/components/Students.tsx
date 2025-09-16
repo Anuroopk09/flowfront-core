@@ -6,6 +6,9 @@ const Students: React.FC = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBatch, setSelectedBatch] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [modalType, setModalType] = useState<'view' | 'edit'>('view');
 
   if (!user || !hasPermission(user, 'read', 'students')) {
     return (
@@ -37,6 +40,18 @@ const Students: React.FC = () => {
     if (student.performance.length === 0) return 0;
     const totalScore = student.performance.reduce((sum: number, p: any) => sum + (p.score / p.maxScore) * 100, 0);
     return Math.round(totalScore / student.performance.length);
+  };
+
+  const handleView = (student: any) => {
+    setSelectedStudent(student);
+    setModalType('view');
+    setShowModal(true);
+  };
+
+  const handleEdit = (student: any) => {
+    setSelectedStudent(student);
+    setModalType('edit');
+    setShowModal(true);
   };
 
   return (
@@ -170,11 +185,17 @@ const Students: React.FC = () => {
                       </td>
                       <td>
                         <div className="btn-group btn-group-sm">
-                          <button className="btn btn-outline-primary btn-sm">
+                          <button 
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => handleView(student)}
+                          >
                             View
                           </button>
                           {hasPermission(user, 'update', 'students') && (
-                            <button className="btn btn-outline-warning btn-sm">
+                            <button 
+                              className="btn btn-outline-warning btn-sm"
+                              onClick={() => handleEdit(student)}
+                            >
                               Edit
                             </button>
                           )}
@@ -188,6 +209,129 @@ const Students: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Student Modal */}
+      {showModal && selectedStudent && (
+        <div className="modal show d-block" tabIndex={-1} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {modalType === 'view' ? 'Student Details' : 'Edit Student'}
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close"
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                {modalType === 'view' ? (
+                  <div>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <p><strong>Name:</strong> {getStudentUser(selectedStudent.userId)?.fullName}</p>
+                        <p><strong>Email:</strong> {getStudentUser(selectedStudent.userId)?.email}</p>
+                        <p><strong>Address:</strong> {getStudentUser(selectedStudent.userId)?.address}</p>
+                        <p><strong>Batch:</strong> <span className="badge bg-info">{selectedStudent.batch}</span></p>
+                      </div>
+                      <div className="col-md-6">
+                        <p><strong>Courses:</strong> {selectedStudent.courses.length}</p>
+                        <p><strong>Attendance Rate:</strong> {calculateAttendanceRate(selectedStudent)}%</p>
+                        <p><strong>Average Score:</strong> {calculateAverageScore(selectedStudent)}%</p>
+                      </div>
+                    </div>
+                    <hr />
+                    <h6>Recent Performance:</h6>
+                    <div className="table-responsive">
+                      <table className="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>Assignment</th>
+                            <th>Score</th>
+                            <th>Date</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedStudent.performance.slice(0, 5).map((perf: any) => (
+                            <tr key={perf.id}>
+                              <td>{perf.assignment}</td>
+                              <td>{perf.score}/{perf.maxScore}</td>
+                              <td>{new Date(perf.date).toLocaleDateString()}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  <form>
+                    <div className="row">
+                      <div className="col-md-6">
+                        <div className="mb-3">
+                          <label className="form-label">Full Name</label>
+                          <input 
+                            type="text" 
+                            className="form-control"
+                            defaultValue={getStudentUser(selectedStudent.userId)?.fullName}
+                          />
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">Email</label>
+                          <input 
+                            type="email" 
+                            className="form-control"
+                            defaultValue={getStudentUser(selectedStudent.userId)?.email}
+                          />
+                        </div>
+                      </div>
+                      <div className="col-md-6">
+                        <div className="mb-3">
+                          <label className="form-label">Batch</label>
+                          <select className="form-select" defaultValue={selectedStudent.batch}>
+                            <option value="Batch A">Batch A</option>
+                            <option value="Batch B">Batch B</option>
+                            <option value="Batch C">Batch C</option>
+                          </select>
+                        </div>
+                        <div className="mb-3">
+                          <label className="form-label">Address</label>
+                          <textarea 
+                            className="form-control"
+                            rows={3}
+                            defaultValue={getStudentUser(selectedStudent.userId)?.address}
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary"
+                  onClick={() => setShowModal(false)}
+                >
+                  Close
+                </button>
+                {modalType === 'edit' && (
+                  <button 
+                    type="button" 
+                    className="btn btn-primary"
+                    onClick={() => {
+                      alert('Changes would be saved here!');
+                      setShowModal(false);
+                    }}
+                  >
+                    Save Changes
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
